@@ -1,0 +1,535 @@
+{
+  "name": "CryptoRadar_BreakingNews",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 30
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        112,
+        0
+      ],
+      "id": "a742975d-12a7-4b32-9a3a-02e72c0f9089",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "url": "https://cointelegraph.com/rss",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.rssFeedRead",
+      "typeVersion": 1.2,
+      "position": [
+        1136,
+        -64
+      ],
+      "id": "5367f3f1-6c25-4e05-a3fb-febf62f1a31c",
+      "name": "RSS Read"
+    },
+    {
+      "parameters": {
+        "operation": "clearDeduplicationHistory",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.removeDuplicates",
+      "typeVersion": 2,
+      "position": [
+        1360,
+        -64
+      ],
+      "id": "3cd63cbe-96ee-42d3-837f-07633fae605e",
+      "name": "Remove Duplicates"
+    },
+    {
+      "parameters": {
+        "url": "https://api.binance.com/api/v3/ticker/24hr",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "symbols",
+              "value": "[\"BTCUSDT\",\"ETHUSDT\",\"SOLUSDT\",\"BNBUSDT\",\"XRPUSDT\",\"DOGEUSDT\",\"ADAUSDT\",\"TRXUSDT\",\"LINKUSDT\",\"AVAXUSDT\",\"LTCUSDT\",\"DOTUSDT\"]"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        864,
+        16
+      ],
+      "id": "d90b74c0-9695-4861-b253-018fb974783a",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineAll",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        1808,
+        16
+      ],
+      "id": "6574ef72-bc95-4bff-9e33-94612784ac3d",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "destinationFieldName": "marketData",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        1232,
+        48
+      ],
+      "id": "3d84b752-a82f-42ee-940f-6d6d44617282",
+      "name": "Aggregate"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://generativelanguage.googleapis.com/v1beta/models/{{ $env.GEMINI_MODEL || 'gemini-2.0-flash' }}:generateContent",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "x-goog-api-key",
+              "value": "={{ $env.GEMINI_API_KEY }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "=\n\n\n{{\n  JSON.stringify({\n    contents: [\n      {\n        parts: [\n          {\n            text: \"Sen CryptoRadar analiz motorusun. Görevin haberleri, genel piyasa verilerini ve teknik göstergeleri birlikte değerlendirerek tarafsız bir kripto para piyasa analizi oluşturmaktır.\\n\\nTEMEL KURALLAR:\\n1. Yalnızca sana sağlanan verileri kullan. Verilerde bulunmayan haber, fiyat, gösterge veya olay uydurma.\\n2. Eksik veya yetersiz veriler üzerinden kesin çıkarım yapma.\\n3. Çelişkili teknik göstergeler varsa WAIT sinyalini tercih et.\\n4. Analizlerini 1 saatlik (1h) teknik zaman dilimine göre yap.\\n\\nFİYAT KULLANIMI:\\n1. marketData içerisindeki lastPrice canlı piyasa fiyatıdır.\\n2. technicalData içerisindeki currentPrice son kapanmış 1 saatlik mumun kapanış fiyatıdır.\\n3. RSI, EMA, MACD ve Bollinger göstergeleri son kapanmış mumlar üzerinden hesaplanmıştır. Bu göstergeleri yorumlarken technicalData değerlerini esas al.\\n4. Canlı fiyatı teknik göstergelerin hesaplandığı fiyatmış gibi kullanma.\\n5. Bollinger Bandı konumunu değerlendirirken teknik göstergelerin hesaplandığı currentPrice değerini kullan. Canlı fiyatla farklı bir konum oluşuyorsa bunu ayrıca belirt.\\n6. Teknik verinin güncelliğini lastClosedCandle alanından değerlendir. Mum kapanış zamanını yanlış yorumlama.\\n\\nTEKNİK ANALİZ KURALLARI:\\n1. RSI değerini aşırı alım, aşırı satım ve momentum değerlendirmesinde kullan. Tek başına alım veya satım sinyali oluşturma.\\n2. MACD negatif olması, MACD çizgisinin sıfırın altında olduğunu belirtir. MACD Histogram pozitif olması ise MACD çizgisinin sinyal çizgisinin üzerinde olduğunu gösterir. Bu iki durumu birbirine karıştırma.\\n3. EMA_Crossover alanı NO CROSS ise gerçekleşmiş bir bullish veya bearish kesişim olduğunu iddia etme.\\n4. EMA değerlerinin sıralamasını ve fiyatın EMA değerlerine göre konumunu dikkate al.\\n5. Bollinger Upper, Middle ve Lower değerlerini currentPrice ile karşılaştır. Fiyatın hangi bantlar arasında olduğunu doğru belirt.\\n6. Hacim hakkında yorum yaparken marketData içerisindeki 24 saatlik volume veya quoteVolume değerlerini kullan. Bunları 1 saatlik mum hacmi olarak tanımlama.\\n7. Teknik göstergeler aynı yönü desteklemiyorsa sinyal gücünü abartma.\\n\\nHABER ANALİZİ:\\n1. En fazla 10 haberi değerlendir.\\n2. Haberlerin piyasa üzerindeki olası etkisini BULLISH, BEARISH veya NEUTRAL olarak sınıflandır.\\n3. Haber içeriğinde açıkça desteklenmeyen coin etkileri oluşturma.\\n4. Bir haberin etkisi belirsizse bunu belirt.\\n\\nSİNYAL ÜRETİMİ:\\nBTC, ETH, SOL, BNB, XRP, DOGE, ADA, TRX, LINK, AVAX, LTC ve DOT için ayrı ayrı sinyal üret.\\nHer coin için LONG, SHORT veya WAIT seç.\\nSinyal gücünü 0-100 arasında belirle.\\nGüç puanı, sinyalin teknik ve haber verileriyle ne ölçüde desteklendiğini yansıtmalıdır.\\nYeterli veri yoksa veya göstergeler çelişiyorsa WAIT kullan.\\nHer coin için gerekçeni gerçek gösterge değerlerine dayandır.\\nGerekçede 1 saatlik zaman dilimini belirt ve canlı fiyat ile teknik analiz fiyatını karıştırma.\\n\\nYalnızca geçerli JSON döndür. Markdown, kod bloğu veya JSON dışında açıklama kullanma.\\n\\nŞema:\\n{\\n  \\\"marketOverview\\\": {\\\"direction\\\": \\\"BULLISH | BEARISH | NEUTRAL\\\", \\\"summary\\\": \\\"...\\\"},\\n  \\\"newsAnalysis\\\": {\\\"sentiment\\\": \\\"BULLISH | BEARISH | NEUTRAL\\\", \\\"summary\\\": \\\"...\\\", \\\"affectedCoins\\\": []},\\n  \\\"signals\\\": [{\\\"symbol\\\": \\\"BTCUSDT\\\", \\\"signal\\\": \\\"LONG | SHORT | WAIT\\\", \\\"strength\\\": 0, \\\"reason\\\": \\\"...\\\"}],\\n  \\\"riskWarning\\\": \\\"...\\\"\\n}\\n\\nHaberler:\\n\" + JSON.stringify(($json.newsData || []).slice(0, 10)) +\n            \"\\nPiyasa verileri (canlı fiyat ve 24 saatlik istatistikler):\\n\" + JSON.stringify($json.marketData || []) +\n            \"\\nTeknik göstergeler (son kapanmış 1 saatlik mumlar):\\n\" + JSON.stringify($json.technicalData || [])\n          }\n        ]\n      }\n    ],\n    generationConfig: {\n      temperature: 0.2,\n      responseMimeType: \"application/json\"\n    }\n  })\n}}\n",
+        "options": {
+          "timeout": 120000
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        2704,
+        16
+      ],
+      "id": "caada399-3f49-49c0-a20d-3462479145fe",
+      "name": "Gemini_News_Analysis",
+      "alwaysOutputData": true,
+      "retryOnFail": true,
+      "waitBetweenTries": 5000
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        1040,
+        -176
+      ],
+      "id": "8563d023-7093-447e-a896-113e4ff50b31",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.limit",
+      "typeVersion": 1,
+      "position": [
+        2416,
+        16
+      ],
+      "id": "8cc9f060-b9d7-4eb2-8942-17ea5665ac1b",
+      "name": "Limit"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $env.TELEGRAM_CHAT_ID }}",
+        "text": "={{ $json.telegramMessage }}",
+        "additionalFields": {
+          "parse_mode": "HTML"
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        3600,
+        16
+      ],
+      "id": "ee20b42b-5672-49ed-99b6-ff929b7b9425",
+      "name": "Send a text message",
+      "webhookId": "798549fe-1f76-47f2-8a41-48026fff6211"
+    },
+    {
+      "parameters": {
+        "url": "https://api.binance.com/api/v3/klines",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "symbol",
+              "value": "={{ $json.symbol }}"
+            },
+            {
+              "name": "interval",
+              "value": "1h"
+            },
+            {
+              "name": "limit",
+              "value": "250"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        480,
+        128
+      ],
+      "id": "0b4bab6f-789a-4e58-bbc7-fad873a314ff",
+      "name": "Binance_Klines"
+    },
+    {
+      "parameters": {
+        "jsCode": "const symbols = [\n  \"BTCUSDT\",\n  \"ETHUSDT\",\n  \"SOLUSDT\",\n  \"BNBUSDT\",\n  \"XRPUSDT\",\n  \"DOGEUSDT\",\n  \"ADAUSDT\",\n  \"TRXUSDT\",\n  \"LINKUSDT\",\n  \"AVAXUSDT\",\n  \"LTCUSDT\",\n  \"DOTUSDT\"\n];\n\nreturn symbols.map(symbol => ({\n  json: { symbol }\n}));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        288,
+        96
+      ],
+      "id": "eed0b48f-74d9-4237-9a07-839c2aa82f3e",
+      "name": "Coin_List"
+    },
+    {
+      "parameters": {
+        "jsCode": "const symbols = [\n  \"BTCUSDT\", \"ETHUSDT\", \"SOLUSDT\", \"BNBUSDT\",\n  \"XRPUSDT\", \"DOGEUSDT\", \"ADAUSDT\", \"TRXUSDT\",\n  \"LINKUSDT\", \"AVAXUSDT\", \"LTCUSDT\", \"DOTUSDT\"\n];\n\nconst allItems = $input.all();\nconst candlesPerCoin = 250;\n\nif (allItems.length !== symbols.length * candlesPerCoin) {\n  throw new Error(`Beklenen 3000 mum, gelen: ${allItems.length}`);\n}\n\nfunction emaSeries(values, period) {\n  const k = 2 / (period + 1);\n  const result = [values[0]];\n\n  for (let i = 1; i < values.length; i++) {\n    result.push(values[i] * k + result[i - 1] * (1 - k));\n  }\n\n  return result;\n}\n\nfunction calculateRSI(values, period = 14) {\n  let gains = 0;\n  let losses = 0;\n\n  for (let i = 1; i <= period; i++) {\n    const change = values[i] - values[i - 1];\n    gains += Math.max(change, 0);\n    losses += Math.max(-change, 0);\n  }\n\n  let avgGain = gains / period;\n  let avgLoss = losses / period;\n\n  for (let i = period + 1; i < values.length; i++) {\n    const change = values[i] - values[i - 1];\n    avgGain = (avgGain * 13 + Math.max(change, 0)) / 14;\n    avgLoss = (avgLoss * 13 + Math.max(-change, 0)) / 14;\n  }\n\n  if (avgLoss === 0) return 100;\n  return 100 - (100 / (1 + avgGain / avgLoss));\n}\n\nreturn symbols.map((symbol, index) => {\n  const group = allItems.slice(\n    index * candlesPerCoin,\n    (index + 1) * candlesPerCoin\n  );\n\n  let candles = group.map(item => ({\n    openTime: Number(item.json[0]),\n    closeTime: Number(item.json[6]),\n    close: Number(item.json[4]),\n    high: Number(item.json[2]),\n    low: Number(item.json[3]),\n    volume: Number(item.json[5])\n  }));\n\n  const now = Date.now();\n\n  candles = candles.filter(c => c.closeTime < now);\n\n  if (candles.length < 200) {\n    throw new Error(`${symbol}: Yeterli kapanmış mum yok.`);\n  }\n\n  const closes = candles.map(c => c.close);\n\n  const ema9 = emaSeries(closes, 9);\n  const ema21 = emaSeries(closes, 21);\n  const ema50 = emaSeries(closes, 50);\n  const ema200 = emaSeries(closes, 200);\n\n  const previousDiff = ema9.at(-2) - ema21.at(-2);\n  const currentDiff = ema9.at(-1) - ema21.at(-1);\n\n  let crossover = \"NO CROSS\";\n\n  if (previousDiff <= 0 && currentDiff > 0) crossover = \"BULLISH CROSS\";\n  if (previousDiff >= 0 && currentDiff < 0) crossover = \"BEARISH CROSS\";\n\n  const ema12 = emaSeries(closes, 12);\n  const ema26 = emaSeries(closes, 26);\n\n  const macdSeries = ema12.map((v, i) => v - ema26[i]);\n  const signalSeries = emaSeries(macdSeries, 9);\n\n  const last20 = closes.slice(-20);\n  const middle = last20.reduce((a, b) => a + b, 0) / 20;\n\n  const variance = last20.reduce(\n    (sum, value) => sum + Math.pow(value - middle, 2), 0\n  ) / 20;\n\n  const deviation = Math.sqrt(variance);\n\n  return {\n    json: {\n      symbol,\n      currentPrice: closes.at(-1),\n      lastClosedCandle: new Date(candles.at(-1).closeTime).toISOString(),\n      indicators: {\n        RSI_14: Number(calculateRSI(closes).toFixed(2)),\n        MACD: Number(macdSeries.at(-1).toFixed(8)),\n        MACD_Signal: Number(signalSeries.at(-1).toFixed(8)),\n        MACD_Histogram: Number((macdSeries.at(-1) - signalSeries.at(-1)).toFixed(8)),\n        EMA_9: Number(ema9.at(-1).toFixed(8)),\n        EMA_21: Number(ema21.at(-1).toFixed(8)),\n        EMA_50: Number(ema50.at(-1).toFixed(8)),\n        EMA_200: Number(ema200.at(-1).toFixed(8)),\n        EMA_Crossover: crossover,\n        Bollinger_Upper: Number((middle + 2 * deviation).toFixed(8)),\n        Bollinger_Middle: Number(middle.toFixed(8)),\n        Bollinger_Lower: Number((middle - 2 * deviation).toFixed(8))\n      }\n    }\n  };\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        704,
+        128
+      ],
+      "id": "154a2721-9f85-4a8c-a4cb-4a80049040f2",
+      "name": "Technical_Indicators"
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "destinationFieldName": "technicalData",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        928,
+        128
+      ],
+      "id": "141ea02a-19ad-4e95-82af-ab168a5bc222",
+      "name": "Aggregate1"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineAll",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        2032,
+        16
+      ],
+      "id": "03071879-5b1e-4b10-b34f-5538a9bfc505",
+      "name": "Merge_Technical_News"
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "destinationFieldName": "newsData",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        1584,
+        -64
+      ],
+      "id": "935f329d-32e0-451c-8259-3c1ce1993446",
+      "name": "Aggregate_News"
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\n\nreturn items.map(item => {\n  const raw = item.json.candidates?.[0]?.content?.parts?.[0]?.text ?? '';\n\n  const cleaned = raw\n    .replace(/^```json\\s*/i, '')\n    .replace(/\\s*```$/, '')\n    .trim();\n\n  const analysis = JSON.parse(cleaned);\n\n  return {\n    json: {\n      ...item.json,\n      analysis,\n      technicalData: $('Merge_Technical_News').first().json.technicalData || []\n    }\n  };\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2928,
+        16
+      ],
+      "id": "9cca10ce-3d75-4619-aff9-c6f79d12a4fd",
+      "name": "Parse_Gemini_Analysis"
+    },
+    {
+      "parameters": {
+        "jsCode": "\nconst items = $input.all();\n\nreturn items.flatMap(item => {\n  const analysis = item.json.analysis || {};\n  const technicalData = item.json.technicalData || [];\n\n  const directionEmoji = {\n    BULLISH: '🟢',\n    BEARISH: '🔴',\n    NEUTRAL: '🟡'\n  };\n\n  const signalEmoji = {\n    LONG: '🟢',\n    SHORT: '🔴',\n    WAIT: '⏳'\n  };\n\n  const escapeHTML = (value) => String(value ?? '')\n    .replace(/&/g, '&amp;')\n    .replace(/</g, '&lt;')\n    .replace(/>/g, '&gt;');\n\n  const formatNumber = (value, decimals = 2) => {\n    const number = Number(value);\n    return Number.isFinite(number)\n      ? number.toFixed(decimals)\n      : 'Veri yok';\n  };\n\n  const overview = analysis.marketOverview || {};\n  const news = analysis.newsAnalysis || {};\n  const signals = analysis.signals || [];\n\n  const technicalMap = new Map(\n    technicalData.map(coin => [coin.symbol, coin])\n  );\n\n  const messages = [];\n\n  // 1. MESAJ: GENEL PİYASA VE HABERLER\n  let overviewMessage = '';\n\n  overviewMessage += '📡 <b>CRYPTORADAR | PİYASA RAPORU</b>\\n';\n  overviewMessage += '━━━━━━━━━━━━━━━━━━\\n\\n';\n\n  overviewMessage += '🌐 <b>GENEL PİYASA</b>\\n';\n  overviewMessage += `${directionEmoji[overview.direction] || '⚪'} <b>${escapeHTML(overview.direction || 'BİLİNMİYOR')}</b>\\n`;\n  overviewMessage += `${escapeHTML(overview.summary || 'Özet bulunamadı.')}\\n\\n`;\n\n  overviewMessage += '📰 <b>HABER ANALİZİ</b>\\n';\n  overviewMessage += `${directionEmoji[news.sentiment] || '⚪'} <b>${escapeHTML(news.sentiment || 'NEUTRAL')}</b>\\n`;\n  overviewMessage += `${escapeHTML(news.summary || 'Haber özeti bulunamadı.')}\\n`;\n\n  if (news.affectedCoins?.length) {\n    overviewMessage += `\\n🎯 <b>Etkilenebilecek varlıklar:</b> ${news.affectedCoins.map(escapeHTML).join(', ')}\\n`;\n  }\n\n  overviewMessage += '\\n━━━━━━━━━━━━━━━━━━\\n';\n  overviewMessage += '📊 <b>COIN BAZLI TEKNİK ANALİZ</b>\\n';\n  overviewMessage += '<i>Zaman dilimi: 1 saat</i>';\n\n  messages.push(overviewMessage);\n\n  // COIN ANALİZİ OLUŞTURMA\n  const coinMessages = signals.map(signal => {\n    const symbol = signal.symbol;\n    const aiSignal = String(signal.signal || 'WAIT').toUpperCase();\n\n    const technical = technicalMap.get(symbol);\n    const indicators = technical?.indicators || {};\n\n    const bias = String(\n      signal.technicalBias || 'UNKNOWN'\n    ).toUpperCase();\n\n    const score = Number(signal.technicalAlignmentScore) || 0;\n\n    const rsi = Number(indicators.RSI_14);\n    const ema9 = Number(indicators.EMA_9);\n    const ema21 = Number(indicators.EMA_21);\n    const ema50 = Number(indicators.EMA_50);\n    const histogram = Number(indicators.MACD_Histogram);\n    const price = Number(technical?.currentPrice);\n\n    const rsiDirection =\n      Number.isFinite(rsi)\n        ? (rsi < 45 ? 'BEARISH' : rsi > 55 ? 'BULLISH' : 'NÖTR')\n        : 'VERİ YOK';\n\n    const emaDirection =\n      Number.isFinite(ema9) && Number.isFinite(ema21)\n        ? (ema9 < ema21 ? 'BEARISH' : ema9 > ema21 ? 'BULLISH' : 'NÖTR')\n        : 'VERİ YOK';\n\n    const macdDirection =\n      Number.isFinite(histogram)\n        ? (histogram < 0 ? 'BEARISH' : histogram > 0 ? 'BULLISH' : 'NÖTR')\n        : 'VERİ YOK';\n\n    const priceDirection =\n      Number.isFinite(price) && Number.isFinite(ema50)\n        ? (price < ema50 ? 'BEARISH' : price > ema50 ? 'BULLISH' : 'NÖTR')\n        : 'VERİ YOK';\n\n    const directionLabel = {\n      BEARISH: '🔴 Bearish',\n      BULLISH: '🟢 Bullish',\n      NÖTR: '🟡 Nötr',\n      'VERİ YOK': '⚪ Veri yok',\n      UNKNOWN: '⚪ Bilinmiyor'\n    };\n\n    const bearishCount = Number(signal.bearishConditions) || 0;\n    const bullishCount = Number(signal.bullishConditions) || 0;\n\n    let technicalComment = '';\n\n    if (bias === 'BEARISH') {\n      technicalComment =\n        `${bearishCount} koşul bearish, ${bullishCount} koşul bullish. Satış yönlü teknik koşullar ağırlıkta.`;\n    } else if (bias === 'BULLISH') {\n      technicalComment =\n        `${bullishCount} koşul bullish, ${bearishCount} koşul bearish. Alım yönlü teknik koşullar ağırlıkta.`;\n    } else {\n      technicalComment =\n        'Teknik göstergeler belirgin bir yön üstünlüğü oluşturmuyor.';\n    }\n\n    let comparison = '';\nlet comparisonStatus = '';\n\nif (bias === 'UNKNOWN') {\n  comparisonStatus = '⚪ TEKNİK VERİ YETERSİZ';\n  comparison = 'Bağımsız teknik doğrulama yapılamadı.';\n\n} else if (aiSignal === 'WAIT') {\n  comparisonStatus = '⏳ BEKLEME';\n  comparison =\n    `AI işlem açılmasını önermiyor. Teknik yön ${bias}. ` +\n    'Teknik eğilim bulunması tek başına işlem sinyali değildir.';\n\n} else if (bias === 'NEUTRAL') {\n  comparisonStatus = '🟡 TEKNİK TEYİT SINIRLI';\n  comparison =\n    'AI işlem sinyali üretti ancak teknik göstergeler belirgin bir yönü desteklemiyor.';\n\n} else if (\n  (aiSignal === 'LONG' && bias === 'BULLISH') ||\n  (aiSignal === 'SHORT' && bias === 'BEARISH')\n) {\n  comparisonStatus = '🟢 UYUMLU';\n  comparison =\n    'AI sinyali ve bağımsız teknik analiz aynı yönü destekliyor.';\n\n} else {\n  comparisonStatus = '🔴 ÇELİŞKİLİ';\n  comparison =\n    'AI sinyali ile bağımsız teknik yön farklı. İşlem kararı öncesinde dikkatli değerlendirme gerekli.';\n}\n\n    let coinMessage = '';\n\n    coinMessage += `${signalEmoji[aiSignal] || '⚪'} <b>${escapeHTML(symbol)}</b>\\n`;\n    coinMessage += '━━━━━━━━━━━━━━━━━━\\n';\n\n    coinMessage += '🤖 <b>YAPAY ZEKÂ KARARI</b>\\n';\n    coinMessage += `Sinyal: <b>${escapeHTML(aiSignal)}</b>\\n`;\n    coinMessage += `Sinyal gücü: <b>${formatNumber(signal.strength, 0)}/100</b>\\n`;\n    coinMessage += `Açıklama: ${escapeHTML(signal.reason || 'Açıklama bulunamadı.')}\\n\\n`;\n\n    coinMessage += '📈 <b>BAĞIMSIZ TEKNİK ANALİZ</b>\\n';\n    coinMessage += `Teknik yön: ${directionEmoji[bias] || '⚪'} <b>${escapeHTML(bias)}</b>\\n`;\n    coinMessage += `Teknik uyum: <b>${formatNumber(score, 0)}/100</b>\\n\\n`;\n\n    coinMessage += '<b>Gösterge dağılımı:</b>\\n';\n    coinMessage += `• RSI (${formatNumber(rsi)}): ${directionLabel[rsiDirection]}\\n`;\n    coinMessage += `• EMA 9 / 21: ${directionLabel[emaDirection]}\\n`;\n    coinMessage += `• MACD Histogram (${formatNumber(histogram, 5)}): ${directionLabel[macdDirection]}\\n`;\n    coinMessage += `• Fiyat / EMA 50: ${directionLabel[priceDirection]}\\n\\n`;\n\n    coinMessage += `<b>Teknik tespit:</b> ${escapeHTML(technicalComment)}\\n\\n`;\n\n    coinMessage += '🔎 <b>GENEL DEĞERLENDİRME</b>\\n';\n    coinMessage += `<b>${escapeHTML(comparisonStatus)}</b>\\n`;\n    coinMessage += `${escapeHTML(comparison)}\\n`;\n    coinMessage += `<i>Teknik uyum puanı başarı olasılığı değildir; 4 göstergenin yönsel dağılımını gösterir.</i>\\n`;\n\n    return coinMessage;\n  });\n\n  // Coinleri 4'erli gruplara ayır\n  for (let i = 0; i < coinMessages.length; i += 3) {\n    let partMessage = '';\n\n    const partNumber = Math.floor(i / 3) + 1;\n    const totalParts = Math.ceil(coinMessages.length / 3);\n\n    partMessage += `📊 <b>CRYPTORADAR | COIN ANALİZİ ${partNumber}/${totalParts}</b>\\n`;\n    partMessage += '━━━━━━━━━━━━━━━━━━\\n\\n';\n\n    partMessage += coinMessages.slice(i, i + 3).join('\\n\\n');\n    messages.push(partMessage);\n  }\n\n  // SON MESAJIN SONUNA RİSK UYARISI\n  const lastIndex = messages.length - 1;\n\n  messages[lastIndex] += '\\n\\n━━━━━━━━━━━━━━━━━━\\n';\n  messages[lastIndex] += '⚠️ <b>RİSK UYARISI</b>\\n';\n  messages[lastIndex] += `${escapeHTML(analysis.riskWarning || 'Kripto piyasaları yüksek risk içerir.')}\\n\\n`;\n\n  messages[lastIndex] += '━━━━━━━━━━━━━━━━━━\\n';\n  messages[lastIndex] += '🤖 <i>CryptoRadar AI Analysis</i>\\n';\n  messages[lastIndex] += 'Bu rapor yatırım tavsiyesi değildir.';\n\n  // Her mesajı ayrı n8n item olarak gönder\n  return messages.map((message, index) => ({\n  json: {\n    telegramMessage: message,\n    messagePart: index + 1,\n    totalMessages: messages.length,\n    messageLength: message.length\n  }\n}));\n});\n\n\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3376,
+        16
+      ],
+      "id": "d7978454-190f-4b7c-a9d9-f6e25fd869d1",
+      "name": "Format_Telegram_Report"
+    },
+    {
+      "parameters": {
+        "jsCode": "\nconst items = $input.all();\n\nreturn items.map(item => {\n  const analysis = item.json.analysis;\n  const technicalData = item.json.technicalData || [];\n\n  const technicalMap = new Map(\n    technicalData.map(coin => [coin.symbol, coin])\n  );\n\n  const validatedSignals = (analysis.signals || []).map(signal => {\n    const technical = technicalMap.get(signal.symbol);\n\n    if (!technical?.indicators) {\n      return {\n        ...signal,\n        signal: 'WAIT',\n        strength: 0,\n        reason: 'Teknik veri bulunamadı. Sinyal doğrulanamadı.'\n      };\n    }\n\n    const indicators = technical.indicators;\n    const reason = signal.reason || '';\n    const checks = [];\n\n    const crossover = String(\n      indicators.EMA_Crossover || ''\n    ).toUpperCase();\n\n    const rsi = Number(indicators.RSI_14);\n    const macd = Number(indicators.MACD);\n    const histogram = Number(indicators.MACD_Histogram);\n\n    const price = Number(technical.currentPrice);\n    const ema9 = Number(indicators.EMA_9);\n    const ema21 = Number(indicators.EMA_21);\n    const ema50 = Number(indicators.EMA_50);\n\n    // 1. Teknik veri kontrolü\n    if (\n      ![\n        rsi, macd, histogram, price,\n        ema9, ema21, ema50\n      ].every(Number.isFinite)\n    ) {\n      return {\n        ...signal,\n        signal: 'WAIT',\n        strength: 0,\n        reason: 'Teknik göstergeler eksik veya geçersiz.'\n      };\n    }\n\n    // 2. Zaman dilimi kontrolü\n    if (/günlük|daily|1d/i.test(reason)) {\n      checks.push('Günlük veri mevcut değil.');\n    }\n\n    // 3. RSI açıklama kontrolü\n    const rsiMatch = reason.match(\n      /RSI\\s*(?:değeri\\s*)?(\\d+(?:[.,]\\d+)?)/i\n    );\n\n    if (rsiMatch) {\n      const claimedRSI = Number(\n        rsiMatch[1].replace(',', '.')\n      );\n\n      if (Math.abs(claimedRSI - rsi) > 3) {\n        checks.push('RSI iddiası gerçek verilerle uyuşmuyor.');\n      }\n    }\n\n    // 4. EMA kesişimi açıklama kontrolü\n    const isBullishCross = /bullish cross/i.test(reason);\n    const isBearishCross = /bearish cross/i.test(reason);\n\n    if (isBullishCross || isBearishCross) {\n      if (\n        crossover === 'NO CROSS' ||\n        (isBullishCross && !crossover.includes('BULLISH')) ||\n        (isBearishCross && !crossover.includes('BEARISH'))\n      ) {\n        checks.push('EMA kesişimi doğrulanamadı.');\n      }\n    }\n\n    // 5. MACD açıklama kontrolü\n    if (/MACD negatif/i.test(reason) && macd >= 0) {\n      checks.push('MACD negatif iddiası yanlış.');\n    }\n\n    if (/MACD pozitif/i.test(reason) && macd <= 0) {\n      checks.push('MACD pozitif iddiası yanlış.');\n    }\n\n    // 6. MACD Histogram açıklama kontrolü\n    if (\n      /MACD histogram negatif/i.test(reason) &&\n      histogram >= 0\n    ) {\n      checks.push('MACD Histogram negatif iddiası yanlış.');\n    }\n\n    if (\n      /MACD histogram pozitif/i.test(reason) &&\n      histogram <= 0\n    ) {\n      checks.push('MACD Histogram pozitif iddiası yanlış.');\n    }\n\n    // 7. Bollinger Bands konum kontrolü\n    const upper = Number(indicators.Bollinger_Upper);\n    const middle = Number(indicators.Bollinger_Middle);\n    const lower = Number(indicators.Bollinger_Lower);\n\n    if (\n      ![upper, middle, lower].every(Number.isFinite)\n    ) {\n      checks.push('Bollinger verileri eksik veya geçersiz.');\n    } else {\n\n      if (\n        /Bollinger (?:üst|upper) band(?:ının|inin)? (?:üzerinde|üstünde)/i.test(reason) &&\n        price <= upper\n      ) {\n        checks.push('Fiyat üst bandın üzerinde değil.');\n      }\n\n      if (\n        /Bollinger (?:alt|lower) band(?:ının|inin)? (?:altında|altına)/i.test(reason) &&\n        price >= lower\n      ) {\n        checks.push('Fiyat alt bandın altında değil.');\n      }\n\n      if (\n        /Bollinger orta band(?:ının|inin)? altında/i.test(reason) &&\n        price >= middle\n      ) {\n        checks.push('Fiyat orta bandın altında değil.');\n      }\n\n      if (\n        /Bollinger orta band(?:ının|inin)? üzerinde/i.test(reason) &&\n        price <= middle\n      ) {\n        checks.push('Fiyat orta bandın üzerinde değil.');\n      }\n\n      if (\n        /Bollinger band(?:ı|ları) içerisinde/i.test(reason) &&\n        (price < lower || price > upper)\n      ) {\n        checks.push('Fiyat Bollinger bantları içerisinde değil.');\n      }\n\n      // Alt ve orta bant arasındaki konum\n      if (\n        /Bollinger alt(?: ve|\\/)orta band(?:ı|ları) arasında|alt ve orta bantları arasında/i.test(reason) &&\n        (price < lower || price > middle)\n      ) {\n        checks.push('Fiyat alt ve orta Bollinger bandı arasında değil.');\n      }\n\n      // Orta ve üst bant arasındaki konum\n      if (\n        /Bollinger orta(?: ve|\\/)üst band(?:ı|ları) arasında|orta ve üst bantları arasında/i.test(reason) &&\n        (price < middle || price > upper)\n      ) {\n        checks.push('Fiyat orta ve üst Bollinger bandı arasında değil.');\n      }\n    }\n\n    // 8. EMA ve MACD Histogram uyum kontrolü\n    if (\n      crossover.includes('BEARISH') &&\n      histogram > 0\n    ) {\n      checks.push(\n        'Bearish EMA kesişimine rağmen MACD Histogram pozitif.'\n      );\n    }\n\n    if (\n      crossover.includes('BULLISH') &&\n      histogram < 0\n    ) {\n      checks.push(\n        'Bullish EMA kesişimine rağmen MACD Histogram negatif.'\n      );\n    }\n\n    // 9. Bağımsız LONG / SHORT yön kontrolü\n    const bearishConditions = [\n      rsi < 45,\n      ema9 < ema21,\n      histogram < 0,\n      price < ema50\n    ];\n\n    const bullishConditions = [\n      rsi > 55,\n      ema9 > ema21,\n      histogram > 0,\n      price > ema50\n    ];\n\n    const bearishCount = bearishConditions.filter(Boolean).length;\n    const bullishCount = bullishConditions.filter(Boolean).length;\n\n    \n    // 10. Bağımsız teknik uyum puanı\n    let technicalBias = 'NEUTRAL';\n\n    if (bearishCount > bullishCount) {\n      technicalBias = 'BEARISH';\n    } else if (bullishCount > bearishCount) {\n      technicalBias = 'BULLISH';\n    }\n\nconst technicalAlignmentScore = Math.round(\n  Math.max(bearishCount, bullishCount) * 25\n);\n\n    let finalSignal = signal.signal;\n    let finalStrength = Math.max(\n      0,\n      Math.min(100, Number(signal.strength) || 0)\n    );\n\n    let finalReason = reason;\n\n    if (\n      signal.signal === 'LONG' &&\n      bearishCount >= 3\n    ) {\n      finalSignal = 'WAIT';\n      finalStrength = 0;\n      finalReason =\n        'Bağımsız teknik doğrulama başarısız: ' +\n        bearishCount +\n        '/4 gösterge bearish yönde. LONG sinyali WAIT olarak değiştirildi.';\n    }\n\n    if (\n      signal.signal === 'SHORT' &&\n      bullishCount >= 3\n    ) {\n      finalSignal = 'WAIT';\n      finalStrength = 0;\n      finalReason =\n        'Bağımsız teknik doğrulama başarısız: ' +\n        bullishCount +\n        '/4 gösterge bullish yönde. SHORT sinyali WAIT olarak değiştirildi.';\n    }\n\n    // 10. Açıklama doğrulaması başarısızsa WAIT\n    if (checks.length > 0) {\n      finalSignal = 'WAIT';\n      finalStrength = 0;\n      finalReason =\n        'Doğrulama başarısız: ' + checks.join(' ');\n    }\n\n    return {\n      ...signal,\n      signal: finalSignal,\n      strength: finalStrength,\n      reason: finalReason,\n      technicalBias,\n      technicalAlignmentScore,\n      bearishConditions: bearishCount,\n      bullishConditions: bullishCount\n    };\n  });\n\n  return {\n    json: {\n      ...item.json,\n      analysis: {\n        ...analysis,\n        signals: validatedSignals\n      }\n    }\n  };\n});\n\n\n\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3152,
+        16
+      ],
+      "id": "fc885ca1-d879-4f9e-ab22-66c49bb4fd13",
+      "name": "Validate_Technical_Signals"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "RSS Read",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Coin_List",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "RSS Read": {
+      "main": [
+        [
+          {
+            "node": "Remove Duplicates",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Remove Duplicates": {
+      "main": [
+        [
+          {
+            "node": "Aggregate_News",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Aggregate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Merge_Technical_News",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        []
+      ]
+    },
+    "Limit": {
+      "main": [
+        [
+          {
+            "node": "Gemini_News_Analysis",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gemini_News_Analysis": {
+      "main": [
+        [
+          {
+            "node": "Parse_Gemini_Analysis",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Binance_Klines": {
+      "main": [
+        [
+          {
+            "node": "Technical_Indicators",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Coin_List": {
+      "main": [
+        [
+          {
+            "node": "Binance_Klines",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Technical_Indicators": {
+      "main": [
+        [
+          {
+            "node": "Aggregate1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate1": {
+      "main": [
+        [
+          {
+            "node": "Merge_Technical_News",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge_Technical_News": {
+      "main": [
+        [
+          {
+            "node": "Limit",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate_News": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse_Gemini_Analysis": {
+      "main": [
+        [
+          {
+            "node": "Validate_Technical_Signals",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format_Telegram_Report": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate_Technical_Signals": {
+      "main": [
+        [
+          {
+            "node": "Format_Telegram_Report",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "nodeGroups": [],
+  "tags": []
+}
