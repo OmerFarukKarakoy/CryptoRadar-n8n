@@ -71,7 +71,9 @@ flowchart TD
     I --> J["Telegram Notification"]
 ```
 -Not: Diyagram sistemin genel mimarisini göstermektedir. Gerçek n8n workflow bağlantıları ve düğüm yapılandırmaları JSON dosyasında yer almaktadır.
-Processing Pipeline
+
+
+## Processing Pipeline
 Stage	Component	Description
 01	Schedule Trigger	Workflow'un belirlenen zaman aralığında başlatılması
 02	RSS Feed	Cointelegraph haberlerinin alınması
