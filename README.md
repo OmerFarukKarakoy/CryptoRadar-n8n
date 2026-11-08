@@ -82,3 +82,4 @@ Stage	Component	Description
 07	Technical Analysis	Teknik göstergelerin hesaplanması
 08	Report Generation	Analiz sonuçlarının rapor formatına dönüştürülmesi
 09	Telegram	Raporların kullanıcıya iletilmesi
+```
