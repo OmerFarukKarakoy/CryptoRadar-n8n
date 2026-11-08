@@ -69,7 +69,7 @@ flowchart TD
     G --> I["Report Generation"]
     H --> I
     I --> J["Telegram Notification"]
-
+```
 -Not: Diyagram sistemin genel mimarisini göstermektedir. Gerçek n8n workflow bağlantıları ve düğüm yapılandırmaları JSON dosyasında yer almaktadır.
 Processing Pipeline
 Stage	Component	Description
@@ -82,4 +82,4 @@ Stage	Component	Description
 07	Technical Analysis	Teknik göstergelerin hesaplanması
 08	Report Generation	Analiz sonuçlarının rapor formatına dönüştürülmesi
 09	Telegram	Raporların kullanıcıya iletilmesi
-```
+
