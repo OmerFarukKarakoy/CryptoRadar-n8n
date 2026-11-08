@@ -14,48 +14,49 @@ Cointelegraph RSS üzerinden alınan haberleri, Binance piyasa verilerini ve Goo
 
 Proje; haber takibi, sentiment analysis, teknik gösterge hesaplamaları ve otomatik bildirim süreçlerini tek bir workflow içerisinde birleştirir.
 
-✅ **Architecture:** Docker üzerinde çalışan self-hosted n8n otomasyon altyapısı  
-✅ **AI Analysis:** Google Gemini ile haber analizi ve piyasa etkisi değerlendirmesi  
-✅ **Market Data:** Binance üzerinden kripto para fiyat ve mum verileri  
-✅ **Notifications:** Telegram üzerinden otomatik piyasa raporları  
-✅ **Ideal for:** Algo-Traders, Quantitative Finance Enthusiasts, Data Science Learners ve Automation Developers
+✅ **Mimari:** Docker üzerinde çalışan self-hosted n8n otomasyon altyapısı  
+✅ **AI Analiz:** Google Gemini ile haber analizi ve piyasa etkisi değerlendirmesi  
+✅ **Piyasa Verisi:** Binance üzerinden kripto para fiyat ve mum verileri  
+✅ **Bildirimler:** Telegram üzerinden otomatik piyasa raporları  
+✅ **Hedef Kitle:** Algo-Traders, Quantitative Finance Meraklıları, Veri Bilimi Öğrenenler ve Otomasyon Geliştiricileri
 
 ---
 
-## 🧠 Overview & Methodology
+## 🧠 Genel Bakış & Metodoloji
 
 CryptoRadar, kripto para piyasalarından elde edilen farklı veri kaynaklarını otomatik olarak işleyerek anlamlı analiz çıktıları üretmek üzere tasarlanmıştır.
 
 Sistemin çalışma metodolojisi üç temel aşamadan oluşur:
 
-1. **📰 Automated News Monitoring:** Cointelegraph RSS üzerinden güncel kripto para haberlerini toplar. Tekrar eden içeriklerin kontrol edilmesiyle aynı haberlerin yeniden işlenmesi önlenir.
-2. **🤖 AI-Powered Analysis:** Google Gemini kullanılarak haberlerin piyasa üzerindeki olası etkileri değerlendirilir. Haberler sentiment, impact score, related assets ve reasoning gibi alanlarla analiz edilir.
-3. **📊 Technical Market Analysis:** Binance piyasa verileri üzerinden teknik göstergeler hesaplanır. Belirlenen koşullar ve doğrulama kontrolleri doğrultusunda teknik sinyaller oluşturulur.
+1. **📰 Otomatik Haber İzleme:** Cointelegraph RSS üzerinden güncel kripto para haberlerini toplar. Tekrar eden içeriklerin kontrol edilmesiyle aynı haberlerin yeniden işlenmesi önlenir.
+2. **🤖 AI Destekli Analiz:** Google Gemini kullanılarak haberlerin piyasa üzerindeki olası etkileri değerlendirilir. Haberler sentiment, impact score, related assets ve reasoning gibi alanlarla analiz edilir.
+3. **📊 Piyasanın Teknik Analizi:** Binance piyasa verileri üzerinden teknik göstergeler hesaplanır. Belirlenen koşullar ve doğrulama kontrolleri doğrultusunda teknik sinyaller oluşturulur.
 
 Analiz sonuçları birleştirilerek Telegram üzerinden kullanıcıya iletilir.
 
 ---
 
-## ⚙️ Key Features
+## ⚙️ Başlıca Özellikler
 
-- **Automated News Monitoring:** Cointelegraph RSS üzerinden periyodik haber takibi.
-- **AI-Powered Sentiment Analysis:** Gemini ile haberlerin pozitif, negatif veya nötr olarak değerlendirilmesi.
-- **Market Impact Scoring:** Haberlerin piyasa üzerindeki olası etkilerinin puanlanması.
-- **Multi-Asset Monitoring:** Birden fazla kripto para paritesinin eş zamanlı takibi.
+- **Otomatik Haber İzleme:** Cointelegraph RSS üzerinden periyodik haber takibi.
+- **AI Destekli Duygu Analizi:** Gemini ile haberlerin pozitif, negatif veya nötr olarak değerlendirilmesi.
+- **Piyasa Etki Puanlaması:** Haberlerin piyasa üzerindeki olası etkilerinin puanlanması.
+- **Çoklu Varlık İzleme:** Birden fazla kripto para paritesinin eş zamanlı takibi.
 - **Technical Indicator Engine:** RSI, MACD, EMA ve Bollinger Bands gibi teknik göstergelerin hesaplanması.
-- **Signal Validation:** Teknik sinyallerin belirlenen koşullar ve tutarlılık kontrollerinden geçirilmesi.
-- **Duplicate News Control:** Daha önce işlenen haberlerin tekrar değerlendirilmesinin önlenmesi.
-- **Telegram Notifications:** Haber analizleri ve teknik değerlendirmelerin otomatik raporlanması.
-- **Self-Hosted Infrastructure:** Docker ve Docker Compose ile yerel ortamda çalıştırılabilen otomasyon altyapısı.
-- **Environment-Based Configuration:** API anahtarları ve yapılandırma bilgilerinin ortam değişkenleri üzerinden yönetilmesi.
+- **Sinyal Doğrulama:** Teknik sinyallerin belirlenen koşullar ve tutarlılık kontrollerinden geçirilmesi.
+- **Yinelenen Haberlerin Kontrolü:** Daha önce işlenen haberlerin tekrar değerlendirilmesinin önlenmesi.
+- **Telegram Bildirimleri:** Haber analizleri ve teknik değerlendirmelerin otomatik raporlanması.
+- **Self-Hosted Altyapısı:** Docker ve Docker Compose ile yerel ortamda çalıştırılabilen otomasyon altyapısı.
+- **Ortam Tabanlı Yapılandırma
+:** API anahtarları ve yapılandırma bilgilerinin ortam değişkenleri üzerinden yönetilmesi.
 
 ---
 
-## 🏗️ System Architecture
+## 🏗️ Sistem Mimarisi
 
 CryptoRadar, veri toplama, analiz ve bildirim aşamalarını n8n workflow yapısı içerisinde bir araya getirir.
 
-### Workflow Overview
+### Workflow Önizleme
 
 ```mermaid
 flowchart TD
