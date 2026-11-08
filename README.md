@@ -238,6 +238,39 @@ Teknik göstergeler, önceden tanımlanmış sinyal koşullarıyla birlikte değ
 
 
 
+## 🔑 API ve Entegrasyon Yapılandırması
+
+### Google Gemini
+
+Google Gemini, haber içeriklerinin yapay zekâ destekli analizinde kullanılır.
+
+- [Google AI Studio](https://aistudio.google.com/) üzerinden API anahtarı oluşturun.
+- API anahtarını `.env` dosyasındaki `GEMINI_API_KEY` değişkenine ekleyin.
+- Kullanmak istediğiniz model adını `GEMINI_MODEL` değişkeninde belirtin.
+
+**Not:** Model erişimi ve ücretsiz kullanım limitleri Google tarafından belirlenir ve zaman içerisinde değişebilir.
+
+### Binance API
+
+Binance, teknik analiz için gerekli piyasa ve mum verilerini sağlar.
+
+- Herkese açık piyasa verisi uç noktaları kullanılır.
+- Fiyat ve OHLCV (Açılış, En Yüksek, En Düşük, Kapanış ve Hacim) verileri analiz sürecine aktarılır.
+- Mevcut herkese açık piyasa verisi kullanımı için özel API anahtarı veya işlem yetkisi gerekmez.
+
+### Telegram Entegrasyonu
+
+Telegram, analiz sonuçlarının ve piyasa raporlarının kullanıcıya iletilmesi için kullanılır.
+
+1. Telegram üzerinden [BotFather](https://t.me/BotFather) aracılığıyla bir bot oluşturun.
+2. Oluşturduğunuz bot ile sohbet başlatın.
+3. n8n içerisinden Telegram kimlik bilgileri (Credentials) yapılandırmasını tamamlayın.
+4. Gerekli sohbet kimliğini `.env` dosyasındaki `TELEGRAM_CHAT_ID` değişkenine girin.
+
+**Güvenlik Uyarısı:** Telegram bot anahtarınızı GitHub üzerinde veya herkese açık dosyalarda paylaşmayın. Bu bilgiyi güvenli şekilde n8n Credentials bölümünde saklayın.
+
+
+
 ## 🚧 Development Status
 
 CryptoRadar, eğitim, araştırma ve yazılım geliştirme amacıyla oluşturulmuş bir projedir.
