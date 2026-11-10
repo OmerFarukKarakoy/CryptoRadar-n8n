@@ -297,8 +297,4 @@ CryptoRadar, mevcut hâliyle otomatik alım veya satım işlemi gerçekleştiren
 - GitHub: [@OmerFarukKarakoy](https://github.com/OmerFarukKarakoy)
 - Depo: [CryptoRadar-n8n](https://github.com/OmerFarukKarakoy/CryptoRadar-n8n)
 
-⭐ Projeyi faydalı bulduysanız GitHub üzerinden yıldız vererek destek olabilirsiniz.
 
-
-
-**Not:** MIT lisansı eklemediğin için README'ye License rozeti koymadım. Dosyayı doğrudan GitHub'da `README.md` olarak kaydedebilirsin.
